@@ -53,7 +53,6 @@
 		#button_twist { left: 0.25em; bottom: 0.25em; }
 	</style>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 	<script type="text/javascript" src="hammer.min.js"></script>
 	<script type="text/javascript" src="umbra.min.js"></script>
 	<script type="text/javascript" src="anima.min.js"></script>
@@ -62,7 +61,7 @@
 			var CANVAS = '#main';
 			// dumpling geometry
 			function createDumpling(resolution) {
-				resolution = resolution || 10;
+				resolution = Math.max(resolution || 10, 2);
 				var num_rows = resolution + 1;
 				var column_stride = 2 * num_rows
 				var vertices = [];
@@ -71,8 +70,7 @@
 					for (var j = 0; j < num_rows; ++j) {
 						var x = 2 * i/resolution - 1;
 						var y = 2 * j/resolution - 1;
-						var z = Math.sqrt((1 - x * x) * (1 - y * y));
-						vertices.push(x, y, z, 1, x, y, z, -1);
+						vertices.push(x, y, 1, 0, x, y, -1, 0);
 					}
 					if (i > 0) {
 						var column_start = i * column_stride;
@@ -86,6 +84,47 @@
 						}
 					}
 				}
+				// attach the ends
+				var end_width = 1 / resolution;
+				corners = [0, num_rows - 1, num_rows * num_rows - num_rows, num_rows * num_rows - 1];
+				for (var c of corners) {
+					vertices[8*c + 3] = end_width;
+					vertices[8*c + 7] = -end_width;
+				}
+				extras_start = num_rows * column_stride;
+				vertices.push(
+					// blowing up the corner
+					-1, -1, 1, -end_width,   -1, 1,  1, -end_width,
+					1, -1, 1, -end_width,     1, 1,  1, -end_width,
+					// vertex 1 at infinity
+					-1, -1, 10, end_width,   -1, 1, 10, end_width,
+					1, -1, 10, end_width,     1, 1, 10, end_width,
+					// vertex 2 at infinity
+					-1, -1, 10, -end_width,  -1, 1, 10, -end_width,
+					1, -1, 10, -end_width,    1, 1, 10, -end_width,
+				);
+				tris.push(
+					// close corner blowup above and below
+					2 * corners[0], extras_start, 2 * corners[0] + column_stride,
+					2 * corners[1], extras_start + 1, 2 * corners[1] + column_stride,
+					2 * corners[2], extras_start + 2, 2 * corners[2] - column_stride,
+					2 * corners[3], extras_start + 3, 2 * corners[3] - column_stride,
+					// close corner blowup to the side
+					2 * corners[0], extras_start, 2 * corners[0] + 2,
+					2 * corners[1], extras_start + 1, 2 * corners[1] - 2,
+					2 * corners[2], extras_start + 2, 2 * corners[2] + 2,
+					2 * corners[3], extras_start + 3, 2 * corners[3] - 2,
+					// stab out to infinity
+					2 * corners[0], extras_start, extras_start + 4,
+					2 * corners[1], extras_start + 1, extras_start + 5,
+					2 * corners[2], extras_start + 2, extras_start + 6,
+					2 * corners[3], extras_start + 3, extras_start + 7,
+					// close out at infinity
+					extras_start, extras_start + 4, extras_start + 8,
+					extras_start + 1, extras_start + 5, extras_start + 9,
+					extras_start + 2, extras_start + 6, extras_start + 10,
+					extras_start + 3, extras_start + 7, extras_start + 11,
+				);
 				return [vertices, tris];
 			}
 			// dumpling tracking
@@ -93,6 +132,8 @@
 			var texture_offset = new Float32Array([0, 0]);
 			var twist = 0;
 			var turn = 0;
+			window.TWIST_SPEED = 1 / 500;
+			window.TURN_SPEED = 1 / 250;
 			function update_caption() {
 				$('#caption_matrix').html(
 					'<table><tr><td>' + texture_transform[3] +
@@ -165,15 +206,15 @@
 				if (!gl) { return false; }
 				var draw_again = false;
 				// Update animations
-				if (turn > 0) {
-					draw_again = true;
-					turn += this.dt / 250;
-					if (turn > Math.PI / 2) { turn_em_round_finish(); }
-				}
 				if (twist > 0) {
 					draw_again = true;
-					twist += this.dt / 500;
+					twist += this.dt * TWIST_SPEED;
 					if (twist > 1) { twist_em_up_finish(); }
+				}
+				if (turn > 0) {
+					draw_again = true;
+					turn += this.dt * TURN_SPEED;
+					if (turn > Math.PI / 2) { turn_em_round_finish(); }
 				}
 				movable.update(this.dt);
 				draw_again = draw_again || movable.isMoving();
@@ -343,7 +384,7 @@
 				<a href="#config">make it display fractions</a>.</li>
 			<li>Mathematicians should think about (a) what has the torus as a
 				double cover branched at the half-or-whole-integer points, and
-				(b) what \( \operatorname{SL}(2,\mathbb{Z}) \) does to it.</li>
+				(b) what SL(2, <b>Z</b>) does to it.</li>
 		</ol>
 	</div></div>
 	<div id="help_further" class="overlay"><div class="box">

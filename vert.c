@@ -9,11 +9,16 @@ uniform mediump float turn;
 const mediump float PI = 3.1415926535897932384626;
 
 void main(void) {
+	// hacky unpacky things that should really have been separate attributes and uniforms
+	mediump float side = sign(pos.z);
+	mediump float ribbon_width = pos.w;
+	mediump float ribbon_extension = 1.0 + 10000.0 * step(2.0, abs(pos.z));
+
 	// coordinates to pass downstream to texturing
 	vCoord = 0.25 + 0.25 * pos.xy;
-	vCoord.y = 0.5 + (vCoord.y - 0.5) * pos.w;
+	vCoord.y = 0.5 + (vCoord.y - 0.5) * side;
 
-	mediump vec3 xyz = pos.xyw;
+	mediump vec3 xyz = vec3(pos.xy, side);
 
 	// twist 'em up!
 	xyz.y += xyz.z * twist * (xyz.x + 1.0);
@@ -26,9 +31,13 @@ void main(void) {
 	mediump mat2 mat_turn = mat2(cis_turn, cis_turn.yx);
 	mat_turn[1][0] *= -1.0;
 
-	// linear vs trigonometric scale
-	// mediump vec2 xy = xyz.xy;
+	// convert to trig scale
 	xyz.xy = -cos((0.5 + 0.5 * xyz.xy) * PI);
+
+	// cosmetic: pointy pillow shape
+	mediump float scale = max(0.0, dot(xyz.xy, xyz.xy) - 1.0);
+	scale = 1.0 + scale * scale;
+	scale = (1.0 + 0.2 * scale) / 1.2;
 
 	// bulging pillow shape with twist
 	xyz.z *= sqrt(1.0 - xyz.y * xyz.y);
@@ -41,15 +50,12 @@ void main(void) {
 	twist_quadratic_form = mix(twist_quadratic_form, vec4(1.0, 0.0, 0.0, 1.0), sqrt(1.0 - xyz.x * xyz.x));
 	xyz.yz = mat2(twist_quadratic_form.xy, twist_quadratic_form.zw) * xyz.yz;
 
-	// cosmetic: pointy pillow shape
-	mediump float scale = max(0.0, dot(xyz.xy, xyz.xy) - 1.0);
-	scale = 1.0 + scale * scale;
-	scale = (1.0 + 0.2 * scale) / 1.2;
+	// ends off to infinity an their attachments
+	mediump vec2 minor_axis = mix(vec2(0.0, 1.0), vec2(-twist_major_axis.y, twist_major_axis.x), 0.5 + 0.5 * xyz.x);
+	xyz.yz += ribbon_width * minor_axis;
+	xyz *= ribbon_extension;
 
-	xyz = vec3(
-		mat_turn * xyz.xy * scale,
-		xyz.z * 0.6
-	);
-	// xyz.yz = mat_twist * xyz.yz;
+	xyz.xy = mat_turn * xyz.xy;
+	xyz *= scale;
 	gl_Position = projection * mv * vec4(xyz, 1.0);
 }
