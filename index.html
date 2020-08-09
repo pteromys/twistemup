@@ -171,6 +171,9 @@
 			movable.moveReset = function () {
 				Anima.Movable3DUpright.prototype.moveReset.call(this);
 				this.scale = 1; // work around a bug in Movable3D
+				// shift view just slightly so the end ribbons start out visible
+				this.angle_xz = -0.25;
+				this.setRotation();
 				// reset puzzle
 				texture_transform[0] = texture_transform[3] = 1;
 				texture_transform[1] = texture_transform[2] = 0;
@@ -200,7 +203,7 @@
 				this.num_tri_corners = dumpling[1].length;
 				this.handleResize();
 			};
-			var mv = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -3, 1]);
+			var mv = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -4, 1]);
 			glc.draw = function () {
 				var gl = glc.gl;
 				if (!gl) { return false; }
@@ -223,7 +226,7 @@
 					mv[4*i+1] = movable.rotation[1][i];
 					mv[4*i+2] = movable.rotation[2][i];
 				}
-				mv[14] = -3 / movable.scale;
+				mv[14] = -4 / movable.scale;
 
 				var prog = glc.shaders.main;
 				gl.useProgram(prog);
