@@ -1,0 +1,294 @@
+/* line 33, ../src/umbra.scss */
+.overlay, .messagebox {
+  position: absolute;
+  text-align: center;
+}
+
+/* line 37, ../src/umbra.scss */
+.keyboard-key, .icon, .box, .button, input, .progressbar {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* line 43, ../src/umbra.scss */
+html {
+  -moz-box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+/* line 44, ../src/umbra.scss */
+*, *:before, *:after {
+  -moz-box-sizing: inherit;
+  -webkit-box-sizing: inherit;
+  box-sizing: inherit;
+}
+
+/* line 2, ../src/_look_and_feel.scss */
+a:link {
+  color: #7bf;
+}
+/* line 3, ../src/_look_and_feel.scss */
+a:visited {
+  color: #d7f;
+}
+/* line 4, ../src/_look_and_feel.scss */
+a:focus {
+  color: #cff;
+}
+/* line 5, ../src/_look_and_feel.scss */
+a:hover {
+  color: #bdf;
+}
+/* line 6, ../src/_look_and_feel.scss */
+a:active {
+  color: #ffc;
+}
+
+/* line 8, ../src/_look_and_feel.scss */
+h2 {
+  font-size: 150%;
+  margin: 0em auto;
+}
+
+/* line 12, ../src/_look_and_feel.scss */
+p {
+  line-height: 1.5;
+  margin: 1em 0em;
+}
+
+/* line 16, ../src/_look_and_feel.scss */
+li {
+  margin-bottom: 0.5em;
+  line-height: 1.4;
+}
+
+/* line 20, ../src/_look_and_feel.scss */
+.keyboard-key {
+  font-size: 80%;
+  padding: 0em 0.4em;
+  border-radius: 0.4em;
+  border-style: solid;
+  border-width: 1px 1px 2px;
+}
+
+/* line 30, ../src/_look_and_feel.scss */
+.icon {
+  font-size: 200%;
+  width: 1em;
+  height: 1em;
+  line-height: 1em;
+}
+
+/* Overlays and interface boxes */
+/* line 2, ../src/_overlays.scss */
+.overlay {
+  top: 1em;
+  bottom: 2em;
+  left: 1em;
+  right: 1em;
+  margin: 0em;
+  padding: 0em;
+  visibility: hidden;
+  opacity: 0;
+  z-index: -1;
+  transition: visibility 0.0s 0.2s, opacity 0.2s 0.0s, z-index 0.0s 0.0s;
+}
+/* line 6, ../src/_overlays.scss */
+.overlay:target {
+  visibility: visible;
+  opacity: 1;
+  z-index: 1;
+  transition: visibility 0.0s 0.0s, opacity 0.2s 0.0s, z-index 0.0s 0.0s;
+}
+
+/* line 17, ../src/_overlays.scss */
+.box {
+  color: white;
+  background: #fdfdfd;
+  background: rgba(17, 17, 17, 0.9);
+  box-shadow: 0em 0em 2em 0em rgba(255, 255, 255, 0.5);
+  text-align: left;
+  padding: 0.5em 1.5em;
+  border-radius: 1em;
+  max-width: 25em;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+/* Buttons */
+/* line 2, ../src/_buttons.scss */
+.button, a.button {
+  color: white;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+}
+
+/* line 9, ../src/_buttons.scss */
+.button {
+  text-align: center;
+  padding: 0.25em;
+  border-radius: 0.25em;
+  transition: background-color 0.1s, opacity 0.1s;
+  opacity: 0.8;
+  background: #fefefe;
+  background: rgba(255, 255, 255, 0.3);
+}
+/* line 17, ../src/_buttons.scss */
+.button:hover, .button:focus, input:focus + label > .button {
+  opacity: 1.0;
+}
+/* line 20, ../src/_buttons.scss */
+.button.disabled {
+  opacity: 0.25;
+  cursor: default;
+  background: #fdfdfd;
+  background: rgba(255, 255, 255, 0);
+}
+
+/* Types of buttons */
+/* line 28, ../src/_buttons.scss */
+.button_root {
+  position: absolute;
+  z-index: 5;
+}
+
+/* line 32, ../src/_buttons.scss */
+.overlay .box .button_leftmargin, .box > .button_back:first-child, .box > :first-child + .button_back {
+  float: left;
+  margin: 0em 0.25em 0.25em -0.5em;
+}
+
+/* line 36, ../src/_buttons.scss */
+.overlay .box .button_rightmargin, .box > .button_close:first-child, .box > :first-child + .button_close {
+  float: right;
+  margin: 0em -0.5em 0.25em 0.25em;
+}
+
+/* line 46, ../src/_buttons.scss */
+#button_config {
+  top: 0.25em;
+  right: 0.25em;
+}
+
+/* line 50, ../src/_buttons.scss */
+#button_help {
+  bottom: 0.25em;
+  right: 0.25em;
+}
+
+/* Forms */
+/* line 4, ../src/_forms.scss */
+input[type="text"] {
+  color: black;
+  border: 0px solid white;
+  padding: 0.25em;
+  border-radius: 0.25em;
+  width: 5em;
+  background: white;
+  background: rgba(255, 255, 255, 0.75);
+}
+/* line 12, ../src/_forms.scss */
+input.valid {
+  background: #7f7;
+  background: rgba(119, 255, 119, 0.75);
+}
+/* line 15, ../src/_forms.scss */
+input.invalid {
+  background: #f97;
+  background: rgba(255, 153, 119, 0.75);
+}
+
+/* Message Box */
+/* line 2, ../src/_messagebox.scss */
+.messagebox {
+  top: 0em;
+  left: 0em;
+  right: 0em;
+  height: 0em;
+  overflow: visible;
+  z-index: 10;
+}
+/* line 7, ../src/_messagebox.scss */
+.messagebox .box {
+  max-height: 6em;
+  margin-top: 1em;
+  text-align: center;
+}
+/* line 8, ../src/_messagebox.scss */
+.messagebox .box:empty {
+  visibility: hidden;
+  z-index: -1;
+  padding-top: 0em;
+  padding-bottom: 0em;
+  transition: visibility 0s 0.1s, z-index 0s 0.1s, padding-top 0.1s 0s, padding-bottom 0.1s 0s;
+}
+
+/* line 14, ../src/_messagebox.scss */
+.message {
+  background: #fdfdfd;
+  background: transparent;
+  padding: 0.1em 0.5em;
+  border-radius: 0.2em;
+  line-height: 0;
+  opacity: 0.0;
+  margin: 0em -0.5em;
+  transition: background-color 0.1s, line-height 0.1s, opacity 0.1s;
+}
+/* line 22, ../src/_messagebox.scss */
+.message.active {
+  line-height: 1.2;
+  opacity: 1.0;
+}
+/* line 26, ../src/_messagebox.scss */
+.message.pinned {
+  background: #000;
+  background: rgba(0, 0, 0, 0.9);
+}
+/* line 27, ../src/_messagebox.scss */
+.message.pinned:before {
+  content: '\002605';
+  padding-right: 0.5em;
+}
+/* line 28, ../src/_messagebox.scss */
+.message.error {
+  color: #f96;
+  font-weight: bold;
+}
+/* line 29, ../src/_messagebox.scss */
+.message.warning {
+  color: #fc0;
+}
+/* line 30, ../src/_messagebox.scss */
+.message.debug {
+  opacity: 0.5;
+}
+
+/* Progress bars */
+/* line 34, ../src/_messagebox.scss */
+.progressbar {
+  position: relative;
+  width: 5em;
+  height: 1em;
+  margin-left: 1em;
+  border-radius: 0.4em;
+  overflow: hidden;
+  border-width: 1px;
+  border-style: solid;
+  border-color: white;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: transparent;
+}
+
+/* line 49, ../src/_messagebox.scss */
+.progressbar_fill {
+  position: absolute;
+  width: 0em;
+  height: 1em;
+  border-radius: 0.2em;
+  background: white;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+/*# sourceMappingURL=umbra.css.map */

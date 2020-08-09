@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Twist 'em up! Turn 'em 'round!</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="theme-color" content="#dfa723" />
+	<link rel="icon" sizes="400x400" href="thumb.png" />
+	<link rel="stylesheet" type="text/css" href="/icons/webfont.css" />
+	<link rel="stylesheet" type="text/css" href="umbra.css" />
+	<style type="text/css">
+		html, body {
+			width: 100%; height: 100%; margin: 0px; padding: 0px;
+			overflow: hidden;
+		}
+		body { background: #eb3; }
+		canvas {
+			position: absolute; margin: auto;
+			top: 0px; left: 0px; bottom: 0px; right: 0px;
+		}
+		#caption {
+			position: absolute; margin: auto;
+			left: 0px; bottom: 0px; right: 0px;
+			text-align: center;
+		}
+		#caption_fraction, #caption_matrix { margin: 1em; }
+		#caption table {
+			display: inline-block; vertical-align: middle;
+			border-spacing: 0px; margin: 0em 0.25em;
+		}
+		#caption_fraction tr:first-child > td { border-bottom: 1px solid #000; }
+		#caption_matrix td { padding: 0em 0.25em; }
+		#caption_matrix:before { content: '('; }
+		#caption_matrix:after { content: ')'; }
+		#caption_matrix:before, #caption_matrix:after {
+			font-size: 250%; display: inline-block; vertical-align: middle;
+		}
+		form ul {
+			list-style-type: none; text-align: left; padding-left: 0em;
+			margin-bottom: 0em;
+		}
+		dl { padding-left: 1em; }
+		dt { float: left; clear: left; }
+		.license { opacity: 0.75; }
+		#config .box {
+			min-width: 10em;
+		}
+		@media only screen and (min-aspect-ratio: 4/5) and (max-aspect-ratio: 5/4) {
+			.button_root {
+				background: #1f1f1f;
+			}
+		}
+		#button_turn { left: 0.25em; bottom: 2.0em; }
+		#button_twist { left: 0.25em; bottom: 0.25em; }
+	</style>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	<script type="text/javascript" src="hammer.min.js"></script>
+	<script type="text/javascript" src="umbra.min.js"></script>
+	<script type="text/javascript" src="anima.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			var CANVAS = '#main';
+			// dumpling geometry
+			function createDumpling(resolution) {
+				resolution = resolution || 10;
+				var num_rows = resolution + 1;
+				var column_stride = 2 * num_rows
+				var vertices = [];
+				var tris = [];
+				for (var i = 0; i < num_rows; ++i) {
+					for (var j = 0; j < num_rows; ++j) {
+						var x = 2 * i/resolution - 1;
+						var y = 2 * j/resolution - 1;
+						var z = Math.sqrt((1 - x * x) * (1 - y * y));
+						vertices.push(x, y, z, 1, x, y, z, -1);
+					}
+					if (i > 0) {
+						var column_start = i * column_stride;
+						for (var j = column_start; j < column_start + column_stride - 2; j += 2) {
+							tris.push(
+								j, j - column_stride, j + 2,
+								j - column_stride, j + 2, j + 2 - column_stride,
+								j + 1 - column_stride, j + 1, j + 3 - column_stride,
+								j + 1, j + 3 - column_stride, j + 3,
+							);
+						}
+					}
+				}
+				return [vertices, tris];
+			}
+			// dumpling tracking
+			var texture_transform = [1, 0, 0, 1];
+			var texture_offset = new Float32Array([0, 0]);
+			var twist = 0;
+			var turn = 0;
+			function update_caption() {
+				$('#caption_matrix').html(
+					'<table><tr><td>' + texture_transform[3] +
+					'</td><td>' + -texture_transform[2] +
+					'</td></tr><tr><td>' + -texture_transform[1] +
+					'</td><td>' + texture_transform[0] + '</td></tr></table>');
+				$('#caption_fraction').html(
+					(texture_transform[1] * texture_transform[3] > 0 ? '-' : '') + 
+					'<table><tr><td>' + Math.abs(texture_transform[1]) +
+					'</td></tr><tr><td>' + Math.abs(texture_transform[3]) + '</td></tr></table>');
+			}
+			function twist_em_up_finish() {
+				texture_transform[0] -= texture_transform[2];
+				texture_transform[1] -= texture_transform[3];
+				texture_offset[1] = (texture_offset[0] + texture_offset[1]) % 2
+				update_caption();
+				twist = 0;
+			}
+			function turn_em_round_finish() {
+				var x = texture_transform[2];
+				var y = texture_transform[3];
+				texture_transform[2] = texture_transform[0];
+				texture_transform[3] = texture_transform[1];
+				texture_transform[0] = -x;
+				texture_transform[1] = -y;
+				y = texture_offset[1];
+				texture_offset[1] = texture_offset[0];
+				texture_offset[0] = 1 - y;
+				update_caption();
+				turn = 0;
+			}
+			// motion
+			var frame_manager = null;
+			var movable = new Anima.Movable3DUpright();
+			movable.moveReset = function () {
+				Anima.Movable3DUpright.prototype.moveReset.call(this);
+				this.scale = 1; // work around a bug in Movable3D
+				// reset puzzle
+				texture_transform[0] = texture_transform[3] = 1;
+				texture_transform[1] = texture_transform[2] = 0;
+				texture_offset[0] = texture_offset[1] = 0;
+				update_caption();
+				// request redraw
+				if (frame_manager) {
+					frame_manager.requestFrame();
+				}
+			}
+			movable.moveReset();
+			movable.bindKeyboard(window);
+			movable.bindTouch($(CANVAS));
+			// drawing stuff
+			var glc = new Anima.GL();
+			glc.setupCallback = function () {
+				var gl = this.gl;
+				gl.clearColor(0, 0, 0, 0);
+
+				var dumpling = createDumpling(30);
+				this.vertex_buffer = gl.createBuffer();
+				this.element_buffer = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex_buffer);
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.element_buffer);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(dumpling[0]), gl.STATIC_DRAW);
+				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(dumpling[1]), gl.STATIC_DRAW);
+				this.num_tri_corners = dumpling[1].length;
+				this.handleResize();
+			};
+			var mv = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -3, 1]);
+			glc.draw = function () {
+				var gl = glc.gl;
+				if (!gl) { return false; }
+				var draw_again = false;
+				// Update animations
+				if (turn > 0) {
+					draw_again = true;
+					turn += this.dt / 250;
+					if (turn > Math.PI / 2) { turn_em_round_finish(); }
+				}
+				if (twist > 0) {
+					draw_again = true;
+					twist += this.dt / 500;
+					if (twist > 1) { twist_em_up_finish(); }
+				}
+				movable.update(this.dt);
+				draw_again = draw_again || movable.isMoving();
+				for (var i = 0; i < 3; ++i) {
+					mv[4*i] = movable.rotation[0][i];
+					mv[4*i+1] = movable.rotation[1][i];
+					mv[4*i+2] = movable.rotation[2][i];
+				}
+				mv[14] = -3 / movable.scale;
+
+				var prog = glc.shaders.main;
+				gl.useProgram(prog);
+				gl.enable(gl.DEPTH_TEST);
+				gl.depthFunc(gl.LEQUAL);
+				gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+				gl.clear(gl.COLOR_BUFFER_BIT);
+				var pos = gl.getAttribLocation(prog, 'pos');
+				gl.enableVertexAttribArray(pos);
+				gl.vertexAttribPointer(pos, 4, gl.FLOAT, false, 0, 0);
+				gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'projection'), false, glc.projection_matrix);
+				gl.uniformMatrix2fv(gl.getUniformLocation(prog, 'textureTransform'), false, new Float32Array(texture_transform));
+				gl.uniform1f(gl.getUniformLocation(prog, 'twist'), twist);
+				gl.uniform1f(gl.getUniformLocation(prog, 'turn'), turn);
+				gl.uniform2fv(gl.getUniformLocation(prog, 'half_offset'), texture_offset);
+				gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'mv'), false, mv);
+				gl.drawElements(gl.TRIANGLES, glc.num_tri_corners, gl.UNSIGNED_SHORT, 0);
+				return draw_again;
+			};
+			glc.handleResize = function () {
+				var w = $(window).innerWidth();
+				var h = $(window).innerHeight();
+				var r = Math.sqrt(w*w + h*h);
+				movable.units_per_px = -4 / r;
+				movable.touch_map.pan_x.amount = 4 / r;
+				movable.touch_map.pan_y.amount = 4 / r;
+				movable.touch_map.pinch.amount = 4 / r;
+				glc.setProjectionMatrix(w / r, h / r, 0.1, 100);
+				glc.resize(w, h);
+			};
+			glc.resizeCallback = function (w, h) {
+				frame_manager.requestFrame();
+			};
+			glc.addProgramByURLs('main', 'vert.c', 'frag.c', setupContinue);
+			frame_manager = new Anima.FrameManager(glc.draw);
+			window.message_box = Umbra.MessageBox('messages');
+			function setupContinue() {
+				try {
+					glc.bindCanvas($(CANVAS)[0]);
+				} catch (e) {
+					window.message_box.post('GL: ' + e, 'error');
+					glc.gl = null;
+				}
+				frame_manager.requestFrame();
+				$(window).on('resize', glc.handleResize);
+			}
+			// More motion
+			var h = new Hammer.Manager($(CANVAS)[0]);
+			h.add(new Hammer.Pan({direction: Hammer.DIRECTION_ALL, threshold: 0, pointers: 0}));
+			h.on('hammer.input', function (e) {
+				frame_manager.requestFrame();
+			});
+			$(window).on('mouseup touchcancel touchend mouseleave touchleave',
+				function (e) {
+					if (!e.relatedTarget) {
+						frame_manager.requestFrame();
+					}
+				});
+			// On canvas, suppress selection of hidden text boxes
+			$(CANVAS).on('mousedown selectstart', function (e) {
+				e.preventDefault();
+			});
+			function twist_em_up(e) {
+				e.preventDefault();
+				if (turn == 0 && twist == 0) {
+					twist = 1e-6;
+					frame_manager.requestFrame();
+				}
+			}
+			function turn_em_round(e) {
+				e.preventDefault();
+				if (turn == 0 && twist == 0) {
+					turn = 1e-6;
+					frame_manager.requestFrame();
+				}
+			}
+			$('#button_twist').on('click', twist_em_up);
+			$('#button_turn').on('click', turn_em_round);
+			function toggle_caption() {
+				if ($('#config_fraction')[0].checked) {
+					$('#caption_fraction').css({'display': 'inline-block'});
+				} else {
+					$('#caption_fraction').css({'display': 'none'});
+				}
+				if ($('#config_matrix')[0].checked) {
+					$('#caption_matrix').css({'display': 'inline-block'});
+				} else {
+					$('#caption_matrix').css({'display': 'none'});
+				}
+			}
+			toggle_caption();
+			$('#config_fraction').on('change', toggle_caption);
+			$('#config_matrix').on('change', toggle_caption);
+		});
+	</script>
+</head>
+<body>
+	<canvas id="main">
+		<img src="thumb.png" alt="Preview" />
+		This demo requires HTML5 Canvas support.
+	</canvas>
+	<div id="caption">
+		<span id="caption_fraction"></span>
+		<span id="caption_matrix"></span>
+	</div>
+	<div id="messages" class="messagebox"></div>
+	<div id="config" class="overlay"><div class="box">
+		<a class="button icon button_close" title="Close" href="#">&times;</a>
+		<h2>Options</h2>
+		<form method="post" action="#" id="form_config">
+			<ul>
+				<li><input type="checkbox" id="config_fraction" />
+					<label for="config_fraction">Show fraction</label></li>
+				<li><input type="checkbox" id="config_matrix" />
+					<label for="config_matrix">Show matrix</label></li>
+			</ul>
+		</form>
+	</div></div>
+	<div id="help" class="overlay"><div class="box">
+		<a class="button icon button_close" title="Close" href="#">&times;</a>
+		<h2>Help</h2>
+		<p>You are looking at <a
+			href="https://en.wikipedia.org/wiki/John_Horton_Conway">John
+			Conway's</a> <em>rational tangles</em>: the tangles you could get
+			from two pieces of string by repeatedly picking two neighboring
+			ends and turning them over each other.</p>
+		<p>But in this game, you have only two kinds of moves:
+			<dl>
+				<dt class="keyboard-key">Z</dt><dd>Twist 'em up!</dd>
+				<dt class="keyboard-key">A</dt><dd>Turn 'em 'round!</dd>
+			</dl>
+			Get a friend to scramble it for you, and then try untangling it.
+			Good luck!</p>
+		<ul>
+			<li><a href="#help_spoilers">Spoilers</a></li>
+			<li><a href="#help_further">Further reading</a></li>
+		</ul>
+		<p class="license">Code written by
+			<a href="http://pteromys.melonisland.net/">Pteromys</a>
+			and released under the <a href="http://unlicense.org/">Unlicense</a>.</p>
+	</div></div>
+	<div id="help_spoilers" class="overlay"><div class="box">
+		<a class="button icon button_close" title="Close" href="#">&times;</a>
+		<hgroup>
+			<h2>Spoilers</h2>
+			<h3>ordered by increasing spoilage</h3>
+		</hgroup>
+		<ol>
+			<li>One of Conway's theorems was that two rational tangles are
+				<em>ambient isotopic</em> (can be turned into each other
+				without moving or passing the ends) if and only if they represent
+				the same fraction via some algorithm he devised.</li>
+			<li>I chose to draw these tangles constrained to a dumpling
+				surface, which dodges a lot of magic. In particular, it means
+				the string's average slope is a fraction.
+				So: what does each move do to the slope?</li>
+			<li>To see this in action, you can
+				<a href="#config">make it display fractions</a>.</li>
+			<li>Mathematicians should think about (a) what has the torus as a
+				double cover branched at the half-or-whole-integer points, and
+				(b) what \( \operatorname{SL}(2,\mathbb{Z}) \) does to it.</li>
+		</ol>
+	</div></div>
+	<div id="help_further" class="overlay"><div class="box">
+		<a class="button icon button_close" title="Close" href="#">&times;</a>
+		<h2>Further reading</h2>
+		<ul>
+			<li><a href="https://www.youtube.com/watch?v=URg-t3HZE5M">
+				Video of a class doing it with real string that's under no
+				obligation to stay on a dumpling surface.</a></li>
+			<li><a href="http://www.geometer.org/mathcircles/tangle.pdf">
+				Tom Davis's instructions for doing it in your own class with real string.</a></li>
+			<li><a href="http://homepages.math.uic.edu/~kauffman/RTang.pdf">
+				Goldman and Kauffman give a proof of Conway's theorem.</a></li>
+			<li><a href="https://www.reddit.com/r/math/comments/2gvesa/john_conways_rational_tangles/">
+				More sources gathered by u/gmsc.</a></li>
+		</ul>
+	</div></div>
+	<a class="button icon button_root"
+		href="#config" id="button_config" title="Settings">&#x2699;</a>
+	<a class="button icon button_root" data-key="QUESTION"
+		href="#help" id="button_help" title="Help">?</a>
+	<a class="button icon button_root" data-key="Z"
+		id="button_twist" title="Twist 'em up!">&#x292e;</a>
+	<a class="button icon button_root" data-key="A"
+		id="button_turn" title="Turn 'em 'round!">&#x27f2;</a>
+</body>
+</html>
