@@ -76,10 +76,10 @@
 						var column_start = i * column_stride;
 						for (var j = column_start; j < column_start + column_stride - 2; j += 2) {
 							tris.push(
-								j, j - column_stride, j + 2,
-								j - column_stride, j + 2, j + 2 - column_stride,
-								j + 1 - column_stride, j + 1, j + 3 - column_stride,
-								j + 1, j + 3 - column_stride, j + 3,
+								j - column_stride, j, j + 2 - column_stride,
+								j, j + 2 - column_stride, j + 2,
+								j + 1, j + 1 - column_stride, j + 3,
+								j + 1 - column_stride, j + 3, j + 3 - column_stride,
 							);
 						}
 					}
