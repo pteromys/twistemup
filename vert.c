@@ -34,11 +34,6 @@ void main(void) {
 	// convert to trig scale
 	xyz.xy = -cos((0.5 + 0.5 * xyz.xy) * PI);
 
-	// cosmetic: pointy pillow shape
-	mediump float scale = max(0.0, dot(xyz.xy, xyz.xy) - 1.0);
-	scale = 1.0 + scale * scale;
-	scale = (1.0 + 0.2 * scale) / 1.2;
-
 	// bulging pillow shape with twist
 	xyz.z *= sqrt(1.0 - xyz.y * xyz.y);
 	mediump vec2 twist_major_axis = vec2(cos(twist * PI), -sin(twist * PI));
@@ -54,6 +49,11 @@ void main(void) {
 	mediump vec2 minor_axis = mix(vec2(0.0, 1.0), vec2(-twist_major_axis.y, twist_major_axis.x), 0.5 + 0.5 * xyz.x);
 	xyz.yz += ribbon_width * minor_axis;
 	xyz *= ribbon_extension;
+
+	// cosmetic: pointy pillow shape
+	mediump float scale = max(0.0, dot(xyz, xyz) - 1.0);
+	scale = 1.0 + scale * scale;
+	scale = (1.0 + 0.2 * scale) / 1.2;
 
 	xyz.xy = mat_turn * xyz.xy;
 	xyz *= scale;
