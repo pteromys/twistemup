@@ -9,5 +9,14 @@ void main(void) {
 	mediump float string_thickness = 16.0 * texCoord.x * (0.5 - texCoord.x);
 	string_thickness = max(0.5 * sqrt(string_thickness), 1e-3);
 	if (stringness < 1.0 - string_thickness) { discard; }
-	gl_FragColor = vec4(texCoord, 0.5, 1.0);
+
+	mediump vec2 color_coord = 2.0 * texCoord;
+	color_coord.y = min(color_coord.y, 2.0 - color_coord.y);
+	lowp vec4 color = mix(
+		vec4(0.0, 0.8 - 0.4 * color_coord.x, 0.4 + 0.4 * color_coord.x, 1.0),
+		vec4(1.0, 0.4 + 0.4 * color_coord.x, 0.0, 1.0),
+		step(0.5, color_coord.y)
+	);
+
+	gl_FragColor = color;
 }

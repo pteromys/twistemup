@@ -45,7 +45,7 @@ void main(void) {
 	twist_quadratic_form = mix(twist_quadratic_form, vec4(1.0, 0.0, 0.0, 1.0), sqrt(1.0 - xyz.x * xyz.x));
 	xyz.yz = mat2(twist_quadratic_form.xy, twist_quadratic_form.zw) * xyz.yz;
 
-	// ends off to infinity an their attachments
+	// ends off to infinity and their attachments
 	mediump vec2 minor_axis = mix(vec2(0.0, 1.0), vec2(-twist_major_axis.y, twist_major_axis.x), 0.5 + 0.5 * xyz.x);
 	xyz.yz += ribbon_width * minor_axis;
 	xyz *= ribbon_extension;
