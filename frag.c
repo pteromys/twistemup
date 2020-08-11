@@ -33,7 +33,7 @@ void main(void) {
 	highlight = highlight * highlight;
 	highlight = highlight * highlight;
 
-	color *= (0.4 + (step(0.0, litness) * 0.2 + 0.4) * abs(litness));
+	color *= (0.5 + (step(0.0, litness) * 0.2 + 0.3) * abs(litness));
 	color = mix(color, vec3(1.0), highlight * (0.5 + 0.5 * step(0.0, visible_side)));
 	gl_FragColor = vec4(color, 1.0);
 }
