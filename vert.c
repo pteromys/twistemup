@@ -1,5 +1,7 @@
 attribute vec4 pos;
 varying mediump vec2 vCoord;
+varying mediump vec3 vPosition;
+varying mediump vec3 vNormal;
 
 uniform mat4 projection;
 uniform mat4 mv;
@@ -7,6 +9,11 @@ uniform mediump float twist;
 uniform mediump float turn;
 
 const mediump float PI = 3.1415926535897932384626;
+const mediump float EPSILON = 1e-6;  // margin added to all denominators
+
+mat2 mat2_from_vec4(vec4 v) {
+	return mat2(v.xy, v.zw);
+}
 
 void main(void) {
 	// hacky unpacky things that should really have been separate attributes and uniforms
@@ -31,19 +38,44 @@ void main(void) {
 	mediump mat2 mat_turn = mat2(cis_turn, cis_turn.yx);
 	mat_turn[1][0] *= -1.0;
 
-	// convert to trig scale
+	// convert input coordinates to trigonometric scale
+	// for higher resolution at the edges of the square where z will change faster
 	xyz.xy = -cos((0.5 + 0.5 * xyz.xy) * PI);
 
 	// bulging pillow shape with twist
+	// the yz cross-section at x is (mat2 ellipse) * (the unit circle).
 	xyz.z *= sqrt(1.0 - xyz.y * xyz.y);
 	mediump vec2 twist_major_axis = vec2(cos(twist * PI), -sin(twist * PI));
-	mediump vec4 twist_quadratic_form = vec4(
+	mediump vec4 twist_end_projector = vec4(
 		twist_major_axis.x * twist_major_axis,
 		twist_major_axis.y * twist_major_axis
 	);
-	twist_quadratic_form = mix(vec4(1.0, 0.0, 0.0, 0.0), twist_quadratic_form, 0.5 + 0.5 * xyz.x);
-	twist_quadratic_form = mix(twist_quadratic_form, vec4(1.0, 0.0, 0.0, 1.0), sqrt(1.0 - xyz.x * xyz.x));
-	xyz.yz = mat2(twist_quadratic_form.xy, twist_quadratic_form.zw) * xyz.yz;
+	mediump float twist_weight = 0.5 + 0.5 * xyz.x;
+	mediump float inflate_weight = sqrt(1.0 - xyz.x * xyz.x);
+	mediump mat2 ellipse = mat2_from_vec4(mix(
+		mix(vec4(1.0, 0.0, 0.0, 0.0), twist_end_projector, 0.5 + 0.5 * xyz.x),
+		vec4(1.0, 0.0, 0.0, 1.0),
+		inflate_weight
+	));
+	mediump vec2 circle_preimage = xyz.yz;  // used below for normals
+	xyz.yz = ellipse * xyz.yz;
+
+	// compute normal at this stage as the gradient of length(inverse(ellipse) * xyz.yz)**2
+	inflate_weight += EPSILON;
+	mediump mat2 dx_ellipse = mat2_from_vec4(
+		-vec4(1.0, 0.0, 0.0, 1.0) * xyz.x
+		+ 0.5 * twist_end_projector * (xyz.x + 2.0 * xyz.x * xyz.x - 1.0 + inflate_weight)
+		+ 0.5 * vec4(1.0, 0.0, 0.0, 0.0) * (xyz.x - 2.0 * xyz.x * xyz.x + 1.0 - inflate_weight)
+	);  // missing a factor of 1/inflate_weight so we correct it below in defining normal
+	mediump mat2 adjugate_ellipse = mat2(
+		ellipse[1][1], -ellipse[0][1],
+		-ellipse[1][0], ellipse[0][0]
+	);
+	mediump vec3 normal = vec3(
+		dot(-adjugate_ellipse * dx_ellipse * circle_preimage, circle_preimage),
+		inflate_weight * adjugate_ellipse * circle_preimage
+	);
+	normal = mix(vec3(xyz.x, 0.0, 0.0), normal, step(EPSILON, dot(normal, normal)));
 
 	// ends off to infinity and their attachments
 	mediump vec2 minor_axis = mix(vec2(0.0, 1.0), vec2(-twist_major_axis.y, twist_major_axis.x), 0.5 + 0.5 * xyz.x);
@@ -56,6 +88,10 @@ void main(void) {
 	scale = (1.0 + 0.2 * scale) / 1.2;
 
 	xyz.xy = mat_turn * xyz.xy;
+	normal.xy = mat_turn * normal.xy;
 	xyz *= scale;
-	gl_Position = projection * mv * vec4(xyz, 1.0);
+	highp vec4 apparent_position = mv * vec4(xyz, 1.0);
+	gl_Position = projection * apparent_position;
+	vPosition = apparent_position.xyz;
+	vNormal = normalize(normal);
 }

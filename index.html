@@ -204,6 +204,7 @@
 				this.handleResize();
 			};
 			var mv = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -4, 1]);
+			var LIGHT_FROM = new Float32Array([Math.sqrt(1/3), Math.sqrt(1/3), Math.sqrt(1/3)]);
 			glc.draw = function () {
 				var gl = glc.gl;
 				if (!gl) { return false; }
@@ -242,6 +243,7 @@
 				gl.uniform1f(gl.getUniformLocation(prog, 'twist'), twist);
 				gl.uniform1f(gl.getUniformLocation(prog, 'turn'), turn);
 				gl.uniform2fv(gl.getUniformLocation(prog, 'half_offset'), texture_offset);
+				gl.uniform3fv(gl.getUniformLocation(prog, 'light_from'), LIGHT_FROM);
 				gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'mv'), false, mv);
 				gl.drawElements(gl.TRIANGLES, glc.num_tri_corners, gl.UNSIGNED_SHORT, 0);
 				return draw_again;
