@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'NutIcons-twistemup';
+    src: url('twistemup.eot');
+    src: url('twistemup.eot?#iefix') format('embedded-opentype'),
+         url('twistemup.woff') format('woff'),
+         url('twistemup.ttf') format('truetype'),
+         url('twistemup.svg#NutIcons-twistemup') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Apply this font to the icon class. */
+.icon { font-family: NutIcons-twistemup, sans; }
