@@ -170,8 +170,8 @@
 				turn = 0;
 			}
 			// motion
-			var frame_manager = null;
 			var movable = new Anima.Movable3DUpright();
+			window.movable = movable;
 			movable.moveReset = function () {
 				Anima.Movable3DUpright.prototype.moveReset.call(this);
 				this.scale = 1; // work around a bug in Movable3D
@@ -184,9 +184,7 @@
 				texture_offset[0] = texture_offset[1] = 0;
 				update_caption();
 				// request redraw
-				if (frame_manager) {
-					frame_manager.requestFrame();
-				}
+				this.motionCallback();
 			}
 			movable.moveReset();
 			movable.bindKeyboard(window);
@@ -267,24 +265,27 @@
 				frame_manager.requestFrame();
 			};
 			glc.addProgramByURLs('main', 'vert.c', 'frag.c', setupContinue);
-			frame_manager = new Anima.FrameManager(glc.draw);
+			var frame_manager = new Anima.FrameManager(glc.draw);
 			window.message_box = Umbra.MessageBox('messages');
 			function setupContinue() {
+				// attach Anima.GL to the canvas
 				try {
 					glc.bindCanvas($(CANVAS)[0]);
 				} catch (e) {
 					window.message_box.post('GL: ' + e, 'error');
 					glc.gl = null;
 				}
-				frame_manager.requestFrame();
+				// attach to window resize events
 				$(window).on('resize', glc.handleResize);
+				// attach motion tracker to trigger animation management
+				// otherwise input will seem to have no effect
+				movable.motionCallback = function () {
+					frame_manager.requestFrame();
+				}
+				// draw first frame
+				frame_manager.requestFrame();
 			}
 			// More motion
-			var h = new Hammer.Manager($(CANVAS)[0]);
-			h.add(new Hammer.Pan({direction: Hammer.DIRECTION_ALL, threshold: 0, pointers: 0}));
-			h.on('hammer.input', function (e) {
-				frame_manager.requestFrame();
-			});
 			$(window).on('mouseup touchcancel touchend mouseleave touchleave',
 				function (e) {
 					if (!e.relatedTarget) {
