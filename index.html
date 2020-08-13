@@ -26,7 +26,10 @@
 			left: 0px; bottom: 0px; right: 0px;
 			text-align: center;
 		}
-		#caption_fraction, #caption_matrix { margin: 1em; }
+		#caption_fraction, #caption_matrix {
+			margin: 1em; padding: 0.5em; border-radius: 0.5em;
+			background: rgba(0, 0, 0, 0.25);
+		}
 		#caption table {
 			display: inline-block; vertical-align: middle;
 			border-spacing: 0px; margin: 0em 0.25em;
@@ -327,6 +330,10 @@
 			toggle_caption();
 			$('#config_fraction').on('change', toggle_caption);
 			$('#config_matrix').on('change', toggle_caption);
+			$('#config_reset').on('click', function (e) {
+				movable.moveReset();
+				frame_manager.requestFrame();
+			});
 		});
 	</script>
 </head>
@@ -350,6 +357,7 @@
 				<li><input type="checkbox" id="config_matrix" />
 					<label for="config_matrix">Show matrix</label></li>
 			</ul>
+			<button type="button" id="config_reset">Reset</button>
 		</form>
 	</div></div>
 	<div id="help" class="overlay"><div class="box">
