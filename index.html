@@ -13,9 +13,8 @@
 			overflow: hidden;
 		}
 		body {
-			background-color: #323;
-			background: linear-gradient(0deg, #535, #323);
-			color: #fff;
+			background-color: #cfc7df;
+			color: #000;
 		}
 		canvas {
 			position: absolute; margin: auto;
@@ -28,13 +27,13 @@
 		}
 		#caption_fraction, #caption_matrix {
 			margin: 1em; padding: 0.5em; border-radius: 0.5em;
-			background: rgba(0, 0, 0, 0.25);
+			background: rgba(255, 255, 255, 0.5);
 		}
 		#caption table {
 			display: inline-block; vertical-align: middle;
 			border-spacing: 0px; margin: 0em 0.25em;
 		}
-		#caption_fraction tr:first-child > td { border-bottom: 1px solid #fff; }
+		#caption_fraction tr:first-child > td { border-bottom: 1px solid #000; }
 		#caption_matrix td { padding: 0em 0.25em; }
 		#caption_matrix:before { content: '('; }
 		#caption_matrix:after { content: ')'; }
@@ -56,6 +55,7 @@
 				background: #1f1f1f;
 			}
 		}
+		.button.button_root { color: #537; background: rgba(159, 127, 191, 0.5); }
 		#button_turn { left: 0.25em; bottom: 2.0em; }
 		#button_twist { left: 0.25em; bottom: 0.25em; }
 	</style>
@@ -214,7 +214,7 @@
 				this.handleResize();
 			};
 			var mv = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -4, 1]);
-			var LIGHT_FROM = new Float32Array([Math.sqrt(1/3), Math.sqrt(1/3), Math.sqrt(1/3)]);
+			var LIGHT_FROM = new Float32Array([1/3, 2/3, 2/3]);
 			glc.draw = function () {
 				var gl = glc.gl;
 				if (!gl) { return false; }

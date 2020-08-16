@@ -18,8 +18,8 @@ void main(void) {
 	mediump vec2 color_coord = 2.0 * texCoord;
 	color_coord.y = min(color_coord.y, 2.0 - color_coord.y);
 	mediump vec3 color = mix(
-		vec3(0.0, 0.8 - 0.4 * color_coord.x, 0.4 + 0.4 * color_coord.x),
-		vec3(1.0, 0.4 + 0.4 * color_coord.x, 0.0),
+		vec3(0.0, 0.7 - 0.6 * color_coord.x, 0.1 + 0.7 * color_coord.x),
+		vec3(1.0, 0.1 + 0.5 * color_coord.x, 0.0),
 		step(0.5, color_coord.y)
 	);
 	mediump vec3 normal = normalize(vNormal);
@@ -33,7 +33,11 @@ void main(void) {
 	highlight = highlight * highlight;
 	highlight = highlight * highlight;
 
-	color *= (0.5 + (step(0.0, litness) * 0.2 + 0.3) * abs(litness));
+	color *= (0.2 + (step(0.0, litness) * 0.2 + 0.6) * abs(litness));
 	color = mix(color, vec3(1.0), highlight * (0.5 + 0.5 * step(0.0, visible_side)));
+
+	// convert linear to srgb
+	color = mix(12.92 * color, 1.055 * pow(color, vec3(1.0/2.4)) - vec3(0.055), step(0.0031308, color));
+
 	gl_FragColor = vec4(color, 1.0);
 }
