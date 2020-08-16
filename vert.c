@@ -42,7 +42,7 @@ void main(void) {
 	// for higher resolution at the edges of the square where z will change faster
 	xyz.xy = -cos((0.5 + 0.5 * xyz.xy) * PI);
 
-	// bulging pillow shape with twist
+	// bulging dumpling shape with twist
 	// the yz cross-section at x is (mat2 ellipse) * (the unit circle).
 	xyz.z *= sqrt(1.0 - xyz.y * xyz.y);
 	mediump vec2 twist_major_axis = vec2(cos(twist * PI), -sin(twist * PI));
@@ -83,7 +83,7 @@ void main(void) {
 	xyz.yz += ribbon_width * minor_axis;
 	xyz *= ribbon_extension;
 
-	// cosmetic: pointy pillow shape
+	// cosmetic: pointy dumpling shape
 	mediump float scale = max(0.0, dot(xyz, xyz) - 1.0);
 	scale = 1.0 + scale * scale;
 	scale = (1.0 + 0.2 * scale) / 1.2;
