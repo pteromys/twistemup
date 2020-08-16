@@ -261,7 +261,7 @@
 			glc.handleResize = function () {
 				var w = $(window).innerWidth();
 				var h = $(window).innerHeight();
-				var r = Math.sqrt(w*w + h*h);
+				var r = Math.min(w, h) * 2.5;
 				movable.units_per_px = -4 / r;
 				movable.touch_map.pan_x.amount = 4 / r;
 				movable.touch_map.pan_y.amount = 4 / r;
