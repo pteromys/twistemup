@@ -53,14 +53,14 @@
 			margin-bottom: 0em;
 		}
 		/* Navigation links */
-		nav ul {
+		ul.inline {
 			list-style-type: none;
 			padding: 0em;
 			text-align: center;
 			font-weight: bold;
 		}
-		nav li { display: inline-block; }
-		nav a { padding: 0.25em 0.5em; }
+		ul.inline > li { display: inline-block; }
+		ul.inline > li > a { padding: 0.25em 0.5em; }
 		/* Text */
 		.dedication { font-style: italic; text-align: center; }
 		.byline { opacity: 0.75; text-align: right; }
@@ -348,6 +348,20 @@
 				movable.moveReset();
 				frame_manager.requestFrame();
 			});
+			$('#config_scramble').on('click', function (e) {
+				movable.moveReset();
+				twist_em_up_finish();
+				twist_em_up_finish();
+				var num_moves = 6 + Math.floor(1 / Math.max(1 / 10, Math.random()));
+				for (; num_moves > 0; --num_moves) {
+					if (Math.random() < 0.5) {
+						twist_em_up_finish();
+					} else {
+						turn_em_round_finish();
+					}
+				}
+				frame_manager.requestFrame();
+			});
 		});
 	</script>
 </head>
@@ -371,7 +385,10 @@
 				<li><input type="checkbox" id="config_matrix" />
 					<label for="config_matrix">Show matrix in SL(2, <b>Z</b>)</label></li>
 			</ul>
-			<button type="button" id="config_reset">Reset</button>
+			<ul class="inline">
+				<li><button type="button" id="config_reset">Reset</button></li>
+				<li><button type="button" id="config_scramble">Scramble</button></li>
+			</ul>
 		</form>
 	</div></div>
 	<div id="help" class="overlay"><div class="box">
@@ -390,12 +407,10 @@
 			<a class="icon" style="font-size: 100%; text-decoration: none;"
 				href="#config">&#x2699;</a> menu for an auto-scramble button.
 			Then try untangling it. Good luck!</p>
-		<nav>
-			<ul>
-				<li><a href="#help_spoilers">Spoilers</a></li>
-				<li><a href="#help_further">Further reading</a></li>
-			</ul>
-		</nav>
+		<nav><ul class="inline">
+			<li><a href="#help_spoilers">Spoilers</a></li>
+			<li><a href="#help_further">Further reading</a></li>
+		</ul></nav>
 		<p class="dedication">In memory of
 			<a href="https://en.wikipedia.org/wiki/John_Horton_Conway">
 				John Conway (1937&ndash;2020)</a>,
