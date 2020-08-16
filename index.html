@@ -44,8 +44,6 @@
 			list-style-type: none; text-align: left; padding-left: 0em;
 			margin-bottom: 0em;
 		}
-		dl { padding-left: 1em; }
-		dt { float: left; clear: left; }
 		.license { opacity: 0.75; }
 		#config .box {
 			min-width: 10em;
@@ -56,8 +54,8 @@
 			}
 		}
 		.button.button_root { color: #537; background: rgba(159, 127, 191, 0.5); }
-		#button_turn { left: 0.25em; bottom: 2.0em; }
-		#button_twist { left: 0.25em; bottom: 0.25em; }
+		#button_turn { left: 0.25em; bottom: 0.25em; }
+		#button_twist { left: 2.0em; bottom: 0.25em; }
 	</style>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 	<script type="text/javascript" src="hammer.min.js"></script>
@@ -360,7 +358,7 @@
 				<li><input type="checkbox" id="config_fraction" />
 					<label for="config_fraction">Show fraction</label></li>
 				<li><input type="checkbox" id="config_matrix" />
-					<label for="config_matrix">Show matrix</label></li>
+					<label for="config_matrix">Show matrix in SL(2, <b>Z</b>)</label></li>
 			</ul>
 			<button type="button" id="config_reset">Reset</button>
 		</form>
@@ -374,10 +372,10 @@
 			from two pieces of string by repeatedly picking two neighboring
 			ends and turning them over each other.</p>
 		<p>But in this game, you have only two kinds of moves:
-			<dl>
-				<dt class="keyboard-key">Z</dt><dd>Twist 'em up!</dd>
-				<dt class="keyboard-key">A</dt><dd>Turn 'em 'round!</dd>
-			</dl>
+			<ul style="list-style-type: none; padding-left: 1em;">
+				<li><span class="icon" style="font-size: 100%;">&#x292e;</span> / <span class="keyboard-key">X</span> &mdash; Twist 'em up!</li>
+				<li><span class="icon" style="font-size: 100%;">&#x27f2;</span> / <span class="keyboard-key">Z</span> &mdash; Turn 'em 'round!</li>
+			</ul>
 			Get a friend to scramble it for you, and then try untangling it.
 			Good luck!</p>
 		<ul>
@@ -429,9 +427,9 @@
 		href="#config" id="button_config" title="Settings">&#x2699;</a>
 	<a class="button icon button_root" data-key="QUESTION"
 		href="#help" id="button_help" title="Help">?</a>
-	<a class="button icon button_root" data-key="Z"
+	<a class="button icon button_root" data-key="X"
 		id="button_twist" title="Twist 'em up!">&#x292e;</a>
-	<a class="button icon button_root" data-key="A"
+	<a class="button icon button_root" data-key="Z"
 		id="button_turn" title="Turn 'em 'round!">&#x27f2;</a>
 </body>
 </html>
