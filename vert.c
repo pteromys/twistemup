@@ -19,7 +19,7 @@ void main(void) {
 	// hacky unpacky things that should really have been separate attributes and uniforms
 	mediump float side = sign(pos.z);
 	mediump float ribbon_width = pos.w;
-	mediump float ribbon_extension = 1.0 + 10000.0 * step(2.0, abs(pos.z));
+	mediump float ribbon_extension = 1.0 + 1.0 * step(2.0, abs(pos.z));
 
 	// coordinates to pass downstream to texturing
 	vCoord = 0.25 + 0.25 * pos.xy;
@@ -78,6 +78,7 @@ void main(void) {
 	normal = mix(vec3(xyz.x, 0.0, 0.0), normal, step(EPSILON, dot(normal, normal)));
 
 	// ends off to infinity and their attachments
+	normal = mix(vec3(-xyz.x, xyz.yz), normal, step(abs(ribbon_width), 0.0));
 	mediump vec2 minor_axis = mix(vec2(0.0, 1.0), vec2(-twist_major_axis.y, twist_major_axis.x), 0.5 + 0.5 * xyz.x);
 	xyz.yz += ribbon_width * minor_axis;
 	xyz *= ribbon_extension;
