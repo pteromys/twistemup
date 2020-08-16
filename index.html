@@ -8,18 +8,25 @@
 	<link rel="stylesheet" type="text/css" href="icons/webfont.css" />
 	<link rel="stylesheet" type="text/css" href="umbra.css" />
 	<style type="text/css">
+		/* Layout */
 		html, body {
 			width: 100%; height: 100%; margin: 0px; padding: 0px;
 			overflow: hidden;
-		}
-		body {
-			background-color: #cfc7df;
-			color: #000;
 		}
 		canvas {
 			position: absolute; margin: auto;
 			top: 0px; left: 0px; bottom: 0px; right: 0px;
 		}
+		#config .box {
+			min-width: 10em;
+		}
+		/* Colors */
+		body {
+			background-color: #cfc7df;
+			color: #000;
+		}
+		.button.button_root { color: #537; background: rgba(159, 127, 191, 0.5); }
+		/* Display of the fraction or 2x2 matrix */
 		#caption {
 			position: absolute; margin: auto;
 			left: 0px; bottom: 0px; right: 0px;
@@ -40,20 +47,24 @@
 		#caption_matrix:before, #caption_matrix:after {
 			font-size: 250%; display: inline-block; vertical-align: middle;
 		}
+		/* Config box elements */
 		form ul {
 			list-style-type: none; text-align: left; padding-left: 0em;
 			margin-bottom: 0em;
 		}
-		.license { opacity: 0.75; }
-		#config .box {
-			min-width: 10em;
+		/* Navigation links */
+		nav ul {
+			list-style-type: none;
+			padding: 0em;
+			text-align: center;
+			font-weight: bold;
 		}
-		@media only screen and (min-aspect-ratio: 4/5) and (max-aspect-ratio: 5/4) {
-			.button_root {
-				background: #1f1f1f;
-			}
-		}
-		.button.button_root { color: #537; background: rgba(159, 127, 191, 0.5); }
+		nav li { display: inline-block; }
+		nav a { padding: 0.25em 0.5em; }
+		/* Text */
+		.dedication { font-style: italic; text-align: center; }
+		.byline { opacity: 0.75; text-align: right; }
+		/* Custom root buttons */
 		#button_turn { left: 0.25em; bottom: 0.25em; }
 		#button_twist { left: 2.0em; bottom: 0.25em; }
 	</style>
@@ -366,25 +377,36 @@
 	<div id="help" class="overlay"><div class="box">
 		<a class="button icon button_close" title="Close" href="#">&times;</a>
 		<h2>Help</h2>
-		<p>You are looking at <a
-			href="https://en.wikipedia.org/wiki/John_Horton_Conway">John
-			Conway's</a> <em>rational tangles</em>: the tangles you could get
+		<p>You are looking at Conway's <em>rational tangles</em>: the tangles you could get
 			from two pieces of string by repeatedly picking two neighboring
-			ends and turning them over each other.</p>
-		<p>But in this game, you have only two kinds of moves:
+			ends to twist over each other.</p>
+		<p>But in this game, you have only two kinds of moves:</p>
 			<ul style="list-style-type: none; padding-left: 1em;">
 				<li><span class="icon" style="font-size: 100%;">&#x292e;</span> / <span class="keyboard-key">X</span> &mdash; Twist 'em up!</li>
 				<li><span class="icon" style="font-size: 100%;">&#x27f2;</span> / <span class="keyboard-key">Z</span> &mdash; Turn 'em 'round!</li>
 			</ul>
-			Get a friend to scramble it for you, and then try untangling it.
-			Good luck!</p>
-		<ul>
-			<li><a href="#help_spoilers">Spoilers</a></li>
-			<li><a href="#help_further">Further reading</a></li>
-		</ul>
-		<p class="license">Code written by
-			<a href="http://pteromys.melonisland.net/">Pteromys</a>
-			and released under the <a href="http://unlicense.org/">Unlicense</a>.</p>
+		<p>Get a friend to scramble it for you&mdash;or,
+			if your friends are social-distancing, check the
+			<a class="icon" style="font-size: 100%; text-decoration: none;"
+				href="#config">&#x2699;</a> menu for an auto-scramble button.
+			Then try untangling it. Good luck!</p>
+		<nav>
+			<ul>
+				<li><a href="#help_spoilers">Spoilers</a></li>
+				<li><a href="#help_further">Further reading</a></li>
+			</ul>
+		</nav>
+		<p class="dedication">In memory of
+			<a href="https://en.wikipedia.org/wiki/John_Horton_Conway">
+				John Conway (1937&ndash;2020)</a>,
+			dwelling in particular on the
+			<a href="https://www.mathcamp.org/">Canada/USA Mathcamp</a>
+			performance that this game is an adaptation of&mdash;during which
+			he wrapped the tangle in paper that he later tore open
+			with his teeth.</p>
+		<p class="byline">By
+			<a href="http://pteromys.melonisland.net/">Pteromys</a>,
+			released under the <a href="http://unlicense.org/">Unlicense</a>.</p>
 	</div></div>
 	<div id="help_spoilers" class="overlay"><div class="box">
 		<a class="button icon button_close" title="Close" href="#">&times;</a>
@@ -397,7 +419,7 @@
 				<em>ambient isotopic</em> (can be turned into each other
 				without moving or passing the ends) if and only if they represent
 				the same fraction via some algorithm he devised.</li>
-			<li>I chose to draw these tangles constrained to a dumpling
+			<li>I'm drawing these tangles constrained to a dumpling
 				surface, which dodges a lot of magic. In particular, it means
 				the string's average slope is a fraction.
 				So: what does each move do to the slope?</li>
