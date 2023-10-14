@@ -9,9 +9,9 @@ with his teeth.</p>
 
 * [Link to live demo](http://pteromys.melonisland.net/twistemup/)
 
-## Screenshot
+## Sample animation
 
-![screenshot of -2/3 tangle](thumb.png "Screenshot")
+![A looping gif of a rational tangle being twisted and turned](twist.gif)
 
 ## Further reading
 
